@@ -2,7 +2,7 @@ from system_req import SystemRequirement
 
 class Requirement:
     def __init__(
-        self, SystemRequirement: dict[SystemRequirement], title='Unnamed',
+        self, SystemRequirement: list[SystemRequirement], title='Unnamed',
         description='No description', status='Not Started') -> None:
         """Creates an instance of the Requirement class. This class is the main
            area where requirments are stored and is the top of the hierarchy.
@@ -64,7 +64,7 @@ class Requirement:
             return False
 
     def _set_system_requirements(
-        self, system_requirement: dict[SystemRequirement]) -> bool:
+        self, system_requirement: list[SystemRequirement]) -> bool:
         """Sets the children SystemRequirement objects.
 
         Args:
@@ -107,7 +107,7 @@ class Requirement:
         """
         return self.status
 
-    def _get_system_requirements(self) -> dict[SystemRequirement]:
+    def _get_system_requirements(self) -> list[SystemRequirement]:
         """Gets the children SystemRequirement objects.
 
         Returns:

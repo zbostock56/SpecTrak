@@ -2,7 +2,7 @@ from ll import LowLevel
 
 class HighLevel:
     def __init__(
-        self, LowLevel: dict[LowLevel], title='Unnamed',
+        self, LowLevel: list[LowLevel], title='Unnamed',
         description='No description', status='Not Started') -> None:
         """Creates an instance of the HighLevel class. This class is in the
            in the chain of requirements, specifying high level concepts for a
@@ -64,7 +64,7 @@ class HighLevel:
         else:
             return False
 
-    def _set_low_levels(self, low_level: dict[LowLevel]) -> bool:
+    def _set_low_levels(self, low_level: list[LowLevel]) -> bool:
         """Sets the LowLevel objects
 
         Args:
@@ -107,7 +107,7 @@ class HighLevel:
         """
         return self.status
 
-    def _get_low_levels(self) -> dict[LowLevel]:
+    def _get_low_levels(self) -> list[LowLevel]:
         """Returns the children LowLevel objects
 
         Returns:
