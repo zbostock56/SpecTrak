@@ -115,7 +115,7 @@ class JsonRead:
         return Settings(s["color_theme"], s["organization_name"],
                         s["software_version"], s["support"], s["remote_url"])
 
-    def _get_settings(self):
+    def _get_settings(self) -> Settings:
         """Gets the Settings object stored in the class
 
         Returns:
