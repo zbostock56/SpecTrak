@@ -18,6 +18,63 @@ class State:
         self.username = username
         self.settings = settings
 
+    ############
+    #   Setters
+    ############
+    def _set_settings(self, settings: Settings) -> None:
+        """Sets the settings of the program state.
+
+        Args:
+            settings (Settings): Object of settings to set to program state.
+        """
+        self.settings = settings
+
+    def _set_username(self, username: str) -> None:
+        """Sets the username of the user logged in.
+
+        Args:
+            username (str): Username to set as logged in.
+        """
+        self.username = username
+
+    def _set_projects(self, projects: list[Project]) -> None:
+        """Sets the projects list which is currently loaded into the program.
+
+        Args:
+            projects (list[Project]): List of projects to set to program state.
+        """
+        self.projects = projects
+
+    ############
+    #   Getters
+    ############
+    def _get_settings(self) -> Settings:
+        """Gets the settings object that is currently loaded to program state.
+
+        Returns:
+            Settings: Settings object.
+        """
+        return self.settings
+
+    def _get_username(self) -> str:
+        """Gets the username of the user who is currently logged in.
+
+        Returns:
+            str: username.
+        """
+        return self.username
+
+    def _get_projects(self) -> list[Project]:
+        """Gets the currently set projects for the program state.
+
+        Returns:
+            list[Project]: List of the projects loaded to program state.
+        """
+        return self.projects
+
+    ############
+    #   Helpers
+    ############
     def _append_project(self, project: Project) -> None:
         """Append a Project object to the program state.
 

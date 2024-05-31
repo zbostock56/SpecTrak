@@ -1,4 +1,5 @@
 import json
+import datetime
 
 from hl import HighLevel
 from ll import LowLevel
@@ -7,22 +8,79 @@ from system_req import SystemRequirement
 from settings import Settings
 from project import Project
 
-#
-#   TODO: Add try catches to make sure that, if the data is not there, no crashes.
-#
-
 class JsonReader:
-    def __init__(self, file_path: str) -> None:
+    def __init__(self, file_path: str, remote: str) -> None:
         """Creates a new instance of the JsonReader class which is used to extract
            json data from the json requirements file.
 
         Args:
-            file_path (str): Specifies the location of the file to search
+            file_path (str): Specifies the location of the file to search.
+            remote (str): Specifies the remote location to store the json
         """
-        # TODO: Update for remote file
         self.file_path = file_path
         self.read_json = None
         self.settings = None
+        self.remote_file_path = remote
+        self.timestamp = None
+
+    ############
+    #   Setters
+    ############
+    def _set_remote_file_path(self, remote: str) -> None:
+        """Sets the remote file path for the writer.
+
+        Args:
+            remote (str): remote file path.
+        """
+        self.remote_file_path = remote
+
+    ############
+    #   Getters
+    ############
+    def _get_remote_file_path(self) -> str:
+        """Gets the remote file path that is set in the writer.
+
+        Returns:
+            str: remote file path.
+        """
+        return self.remote_file_path
+
+    def _get_settings(self) -> Settings:
+        """Gets the Settings object stored in the class
+
+        Returns:
+            Settings : Stored Settings object
+        """
+        return self.settings
+
+    ############
+    #   Helpers
+    ############
+    def _read_timestamp(self) -> float:
+        """Reads the json file specified for the timestamp data.
+
+        Returns:
+            float: timestamp in seconds as a float.
+        """
+        with open(self.file_path, "r") as input_file:
+            data = json.loads(input_file.read())
+            self.timestamp = data["timestamp"]
+            return self.timestamp
+
+    def _compare_timestamp(self) -> bool:
+        """Compares the current time with the timestamp in the file from the
+           object.
+
+        Returns:
+            bool: If the timestamp of the object's file is earlier, return true;
+                  otherwise, false.
+        """
+        if self.timestamp is None:
+            self.timestamp = self._read_timestamp
+        if self.timestamp < datetime.datetime.now().timestamp():
+            return True
+        else:
+            return False
 
     def _read_json(self, project_name: str) -> Project:
         """Highest level reading method. Looks for specific projects
@@ -128,11 +186,3 @@ class JsonReader:
         """
         return Settings(s["color_theme"], s["organization_name"],
                         s["software_version"], s["support"], s["remote_url"])
-
-    def _get_settings(self) -> Settings:
-        """Gets the Settings object stored in the class
-
-        Returns:
-            Settings : Stored Settings object
-        """
-        return self.settings
