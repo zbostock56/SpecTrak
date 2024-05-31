@@ -115,3 +115,21 @@ class Requirement:
                                Requirement object.
         """
         return self.SystemRequirement
+
+    ############
+    #   Helpers
+    ############
+    def _remove_system_requirement(self, title: str) -> bool:
+        """Removes a system requirement object based on its title.
+
+        Args:
+            title (str): title of system requirement to remove.
+
+        Returns:
+            bool: If system requirement was found or not.
+        """
+        for sys_req in self.SystemRequirement:
+            if sys_req.title == title:
+                self.SystemRequirement.remove(sys_req)
+                return True
+        return False

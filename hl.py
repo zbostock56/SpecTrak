@@ -114,3 +114,21 @@ class HighLevel:
             LowLevel: LowLevel object(s) related to this HighLevel object
         """
         return self.LowLevel
+
+    ############
+    #   Helpers
+    ############
+    def _remove_low_level_requirement(self, title: str) -> bool:
+        """Removes a low level requirement based on name.
+
+        Args:
+            title (str): title of the low level requirement.
+
+        Returns:
+            bool: If the ll req was found or not.
+        """
+        for l in self.LowLevel:
+            if l.title == title:
+                self.LowLevel.remove(l)
+                return True
+        return False

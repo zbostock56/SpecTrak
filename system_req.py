@@ -114,3 +114,21 @@ class SystemRequirement:
                              objects.
         """
         return self.HighLevel
+
+    ############
+    #   Helpers
+    ############
+    def _remove_high_level_requirement(self, title: str) -> bool:
+        """Removes high level requirement based on title.
+
+        Args:
+            title (str): Title of high level requirement to remove.
+
+        Returns:
+            bool: If the high level requirement was found or not.
+        """
+        for hl in self.HighLevel:
+            if hl.title == title:
+                self.HighLevel.remove(hl)
+                return True
+        return False

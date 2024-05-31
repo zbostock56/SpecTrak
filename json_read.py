@@ -23,8 +23,12 @@ class JsonRead:
         self.read_json = None
         self.settings = None
 
-    def _read_json(self) -> list[Requirement]:
-        """Highest level reading method.
+    def _read_json(self, project_name: str) -> list[Requirement]:
+        """Highest level reading method. Looks for specific projects
+
+        Args:
+            project_name (str): Name of the project whose Requirements are
+                                desired
 
         Returns:
             list[Requirement]: All the Requirements objects in the json file
@@ -32,12 +36,19 @@ class JsonRead:
         requirements = []
         with open(self.file_path, "r") as input_file:
             data = json.loads(input_file.read())
-            reqs = data["root"]
+            reqs = data[project_name]
             for i in range(len(reqs)):
                 # Create a Requirement object and add to list
                 requirements.append(self._create_requirement(reqs[i]))
             self.settings = self._create_settings(data["settings"])
         return requirements
+
+    def _read_settings(self) -> None:
+        """Reads the settings data from the json.
+        """
+        with open(self.file_path, "r") as input_file:
+            data = json.loads(input_file.read())
+            self.settings = self._create_settings(data["settings"])
 
     def _create_requirement(self, req_req) -> Requirement:
         """Creates a Requirement object from an input json object
