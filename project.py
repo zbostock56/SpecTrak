@@ -1,7 +1,9 @@
 from requirement import Requirement
 
 class Project:
-    def __init__(self, Requirements: list[Requirement], name: str) -> None:
+    def __init__(
+        self, Requirements: list[Requirement], title="Unnamed",
+        description="No description") -> None:
         """The Project class is representative of each project which
            itself contains many "requirements", each represented as a
            Requirements object.
@@ -12,24 +14,50 @@ class Project:
             name (str): name of the Project.
         """
         self.requirements = Requirements
-        self.name = name
+        self.title = title
+        self.description = description
 
-    def _set_name(self, name: str) -> None:
+    ############
+    #   Setters
+    ############
+    def _set_title(self, title: str) -> None:
         """Sets the Project object name.
 
         Args:
-            name (str): Name of the project.
+            title (str): title of the project.
         """
-        self.name = name
+        self.title = title
 
-    def _get_name(self) -> str:
-        """Gets the name of the Project
+    def _set_description(self, desc: str) -> None:
+        """Sets the description of the of the project.
+
+        Args:
+            desc (str): description to set to.
+        """
+        self.description = desc
+
+    ############
+    #   Getters
+    ############
+    def _get_title(self) -> str:
+        """Gets the title of the Project
 
         Returns:
-            str: Project name string
+            str: Project title string
         """
-        return self.name
+        return self.title
 
+    def _get_description(self) -> str:
+        """Gets the description from the project.
+
+        Returns:
+            str: Description from the project.
+        """
+        return self.description
+
+    ############
+    #   Helpers
+    ############
     def _append_requirement(self, req: Requirement) -> None:
         """Adds a requirement to the end of the Requirements object list.
 

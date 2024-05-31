@@ -1,17 +1,22 @@
 from project import Project
+from settings import Settings
 
 class State:
-    def __init__(self, projects: list[Project], username: str) -> None:
+    def __init__(
+        self, projects: list[Project], username: str,
+        settings: Settings) -> None:
         """The State class represents the program state and houses all Projects
            and what user is logged in.
 
         Args:
             projects (list[Project]): Projects that are currently loaded in the
                                       program.
-            username (str): User who is logged in
+            username (str): User who is logged in.
+            settings (settings): Settings of the program
         """
         self.projects = projects
         self.username = username
+        self.settings = settings
 
     def _append_project(self, project: Project) -> None:
         """Append a Project object to the program state.
