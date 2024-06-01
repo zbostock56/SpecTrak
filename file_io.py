@@ -95,6 +95,10 @@ class FileIO:
             print(f"Operation error: {e}")
             self._close_sessions()
 
+    def _close_remote_file_handle(self):
+        """Closes remote file handle.
+        """
+        self.remote_file_handle.close()
 
     def _get_local_file_handle(self):
         """Gets a file handle to the local file.
