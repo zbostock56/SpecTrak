@@ -10,71 +10,82 @@ from project import Project
 
 class JsonWriter:
     def __init__(
-        self, state: State, file_path: str, remote: str) -> None:
+        self, state: State, file_handle) -> None:
         """Creates a new instance or the JsonWriter class which is used to
            output the program state to a json file.
 
         Args:
             state (State): state of the program when writing to json.
-            file_path (str): file path of where to write to.
-            remote (str): remote file path of where to write to.
+            file_handle (io): handle of what to write to
         """
-        self.file_path = file_path
+        self.file_handle = file_handle
         self.state = state
-        self.remote_file_path = remote
 
     ############
     #   Setters
     ############
-    def _set_remote_file_path(self, remote: str) -> None:
-        """Sets the remote file path for the writer.
+    def _set_file_handle(self, handle) -> None:
+        """Sets the file handle and sets the status to dirty.
 
         Args:
-            remote (str): remote file path.
+            handle (io): File handle to set to.
         """
-        self.remote_file_path = remote
+        self.file_handle = handle
 
     ############
     #   Getters
     ############
-    def _get_remote_file_path(self) -> str:
-        """Gets the remote file path that is set in the writer.
+    def _get_file_handle(self):
+        """Gets the file handle from the tuple in the object.
 
         Returns:
-            str: remote file path.
+            io: file handle
         """
-        return self.remote_file_path
+        return self.file_handle
 
     ############
     #   Helpers
     ############
+    def _check_handle_status(self) -> bool:
+        """Checks to make sure the handle is valid.
+
+        Returns:
+            bool: True is the handle is valid, false otherwise.
+        """
+        if self.file_handle is not None:
+            return True
+        print(f"ERR: Trying to write to a file descriptor which is None!")
+        # Unrecoverable error if handle is bad
+        return False
+
     def _write_json(self) -> None:
         """Writes all the the projects to the json file.
         """
-        with open(self.file_path, "w") as output_file:
-            self._write_program_state(output_file)
+        self._write_program_state()
 
-    def _write_program_state(self, output_file) -> None:
+    def _write_program_state(self) -> None:
         """Writes the all the program state to the output file.
-
-        Args:
-            output_file (TextStream): file to output json data to.
         """
-        dictionary = {
-            "settings" : {
-                "color_theme" : self.state.settings.color_theme,
-                "organization_name" : self.state.settings.org_name,
-                "software_version" : self.state.settings.sw_version,
-                "support" : self.state.settings.support,
-                "remote_url" : self.state.settings.remote_url
-            }
-        }
-        for i in range(len(self.state.projects)):
-            dictionary[
-                self.state.projects[i].title
-                ] = self._dictionary_project(self.state.projects[i])
-        dictionary["timestamp"] = datetime.datetime.now().timestamp()
-        json.dump(dictionary, output_file, indent=2)
+        if self._check_handle_status() is True:
+            dictionary = {}
+            if self.state.settings is not None:
+                    dictionary["settings"] = {
+                        "color_theme" : self.state.settings.color_theme,
+                        "organization_name" : self.state.settings.org_name,
+                        "software_version" : self.state.settings.sw_version,
+                        "support" : self.state.settings.support,
+                        "remote_url" : self.state.settings.remote_url
+                    }
+            projects = []
+            for i in range(len(self.state.projects)):
+                projects.append(self._dictionary_project(
+                    self.state.projects[i])
+                )
+            dictionary["projects"] = projects
+            dictionary["timestamp"] = datetime.datetime.now().timestamp()
+            json.dump(dictionary, self.file_handle, indent=2)
+        else:
+            pass
 
     def _dictionary_project(self, project: Project) -> dict:
         """Creates a dictionary of a project object.
