@@ -65,16 +65,18 @@ class FileIO:
                 self.ssh_session.connect(
                     hostname=self.server_ip,
                     username=self.username,
-                    password=self.password
+                    password=self.password,
+                    port=self.server_port
                 )
             else:
                 private_key = paramiko.RSAKey.from_private_key_file(
-                    self.private_key_path
+                    os.path.abspath(self.private_key_path)
                 )
                 self.ssh_session.connect(
                     hostname=self.server_ip,
                     username=self.username,
-                    pkey=private_key
+                    pkey=private_key,
+                    port=self.server_port
                 )
 
             self.sftp_session = self.ssh_session.open_sftp()
@@ -137,6 +139,8 @@ class FileIO:
             print(f"Temporary file error: {e}")
 
     def _close_sessions(self):
+        """Helper function to close the remote connections.
+        """
         if self.sftp_session is not None:
                 self.sftp_session.close()
         if self.ssh_session is not None:
