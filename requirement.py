@@ -2,7 +2,7 @@ from system_req import SystemRequirement
 
 class Requirement:
     def __init__(
-        self, SystemRequirement: dict[SystemRequirement], title='Unnamed',
+        self, SystemRequirement: list[SystemRequirement], title='Unnamed',
         description='No description', status='Not Started') -> None:
         """Creates an instance of the Requirement class. This class is the main
            area where requirments are stored and is the top of the hierarchy.
@@ -64,7 +64,7 @@ class Requirement:
             return False
 
     def _set_system_requirements(
-        self, system_requirement: dict[SystemRequirement]) -> bool:
+        self, system_requirement: list[SystemRequirement]) -> bool:
         """Sets the children SystemRequirement objects.
 
         Args:
@@ -107,7 +107,7 @@ class Requirement:
         """
         return self.status
 
-    def _get_system_requirements(self) -> dict[SystemRequirement]:
+    def _get_system_requirements(self) -> list[SystemRequirement]:
         """Gets the children SystemRequirement objects.
 
         Returns:
@@ -115,3 +115,21 @@ class Requirement:
                                Requirement object.
         """
         return self.SystemRequirement
+
+    ############
+    #   Helpers
+    ############
+    def _remove_system_requirement(self, title: str) -> bool:
+        """Removes a system requirement object based on its title.
+
+        Args:
+            title (str): title of system requirement to remove.
+
+        Returns:
+            bool: If system requirement was found or not.
+        """
+        for sys_req in self.SystemRequirement:
+            if sys_req.title == title:
+                self.SystemRequirement.remove(sys_req)
+                return True
+        return False
