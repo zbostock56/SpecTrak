@@ -1,22 +1,90 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QTreeWidgetItem, QMessageBox, QListWidgetItem, QInputDialog
+import os
+import json
+from PyQt6.QtWidgets import QApplication, QMessageBox, QInputDialog, QTreeWidgetItem, QListWidgetItem
 from model import Model
 from view import View
+from login_view import LoginView
 
 class Controller:
-    """
-    The Controller class connects the Model and the View.
-    It handles user interaction and updates the view and model accordingly.
-    """
+    SETTINGS_FILE = 'spectraksettings.json'
 
     def __init__(self):
-        """
-        Initializes the Controller class.
-        Sets up the application, model, and view.
-        Connects signals and slots.
-        """
         self.app = QApplication(sys.argv)
         self.model = Model()
+
+        self.view = None  # This will be set after successful login or loading settings
+
+        # Check for the presence of the settings file
+        if self.settings_exist():
+            print("Settings file found. Loading settings.")
+            self.load_settings()
+            print(f"Loaded settings: username={self.username}, remote_path={self.remote_path}, is_password={self.is_password}, is_key={self.is_key}")
+            self.show_main_view()
+        else:
+            print("Settings file not found. Showing login view.")
+            self.login_view = LoginView()
+            self.login_view.connectButton.clicked.connect(self.handle_login)
+            self.login_view.show()
+
+    def settings_exist(self):
+        return os.path.exists(self.SETTINGS_FILE)
+
+    def load_settings(self):
+        try:
+            with open(self.SETTINGS_FILE, 'r') as file:
+                settings = json.load(file)
+                self.username = settings.get('username')
+                self.password_or_key = settings.get('password_or_key')
+                self.remote_path = settings.get('remote_path')
+                self.is_password = settings.get('is_password')
+                self.is_key = settings.get('is_key')
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            self.username = None
+            self.password_or_key = None
+            self.remote_path = None
+            self.is_password = None
+            self.is_key = None
+
+    def save_settings(self):
+        settings = {
+            'username': self.username,
+            'password_or_key': self.password_or_key,
+            'remote_path': self.remote_path,
+            'is_password': self.is_password,
+            'is_key': self.is_key
+        }
+        try:
+            with open(self.SETTINGS_FILE, 'w') as file:
+                json.dump(settings, file)
+            print("Settings saved successfully.")
+        except Exception as e:
+            print(f"Error saving settings: {e}")
+
+    def handle_login(self):
+        self.username = self.login_view.usernameInput.text()
+        self.password_or_key = self.login_view.passwordInput.text()
+        self.remote_path = self.login_view.remotePathInput.text()
+        self.is_password = self.login_view.radioPassword.isChecked()
+        self.is_key = self.login_view.radioKey.isChecked()
+
+        if self.validate_login(self.username, self.password_or_key, self.remote_path, self.is_password, self.is_key):
+            self.save_settings()
+            self.show_main_view()
+        else:
+            QMessageBox.warning(self.login_view, "Login Failed", "Invalid username, password/key, or remote path.")
+
+    def validate_login(self, username, password_or_key, remote_path, is_password, is_key):
+        # Perform actual validation here (e.g., checking credentials)
+        if not is_password and not is_key:
+            return False
+        return True
+
+    def show_main_view(self):
+        print("Showing main view.")
+        if hasattr(self, 'login_view'):
+            self.login_view.close()
         self.view = View()
         self.tree_data = self.generate_tree_data()
         self.project_data = self.generate_project_data()
@@ -30,14 +98,11 @@ class Controller:
         self.view.syncButton.clicked.connect(self.sync_with_remote)
         self.view.loadButton.clicked.connect(self.load_from_local)
         self.view.projectListWidget.itemClicked.connect(self.handle_project_selection)
+        
+        self.view.show()  # Ensure the main view is shown
+        print("Main view should be visible now.")
 
     def generate_tree_data(self):
-        """
-        Generates the hierarchical tree data.
-        
-        Returns:
-            list: A list of dictionaries representing the tree structure.
-        """
         tree_data = []
 
         for i in range(1, 10):
@@ -54,12 +119,6 @@ class Controller:
         return tree_data
 
     def generate_project_data(self):
-        """
-        Generates dummy project data. Each project has its own tree structure.
-
-        Returns:
-            dict: A dictionary with project names as keys and tree data as values.
-        """
         project_data = {
             "Project A": self.generate_tree_data(),
             "Project B": self.generate_tree_data(),
@@ -68,12 +127,8 @@ class Controller:
         return project_data
 
     def populate_tree(self, tree_data=None):
-        """
-        Populates the QTreeWidget with items from the hierarchical tree data.
-        """
         if tree_data is None:
             tree_data = self.tree_data
-        # Hide the header
         self.view.treeWidget.setHeaderHidden(True)
         self.view.treeWidget.clear()
         self.system_level_items = []
@@ -87,13 +142,6 @@ class Controller:
         self.view.add_special_item()
 
     def add_child_items(self, parent_item, children):
-        """
-        Adds child items to a given parent item in the QTreeWidget.
-
-        Args:
-            parent_item (QTreeWidgetItem): The parent item to which child items will be added.
-            children (list of dict): List of child items to be added under the parent item.
-        """
         for child in children:
             if isinstance(child, dict):
                 child_item = QTreeWidgetItem([child["name"]])
@@ -104,20 +152,11 @@ class Controller:
                 parent_item.addChild(child_item)
 
     def handle_item_click(self, item, column):
-        """
-        Handles the click event on a tree item.
-        Updates the card with the selected item details.
-
-        Args:
-            item (QTreeWidgetItem): The clicked item in the QTreeWidget.
-            column (int): The column index of the clicked item.
-        """
         self.selected_item = item
 
         if item == self.view.special_item:
             self.add_system_requirement()
         else:
-            # Update the card with the current requirement details
             name = item.text(0)
             description = f"Description for {name}. This is a detailed description that should wrap around to test the word wrapping functionality in the label."
             code_comments = f"Code comments for {name}. This is a sample code comment that is also quite long to test word wrapping."
@@ -126,37 +165,24 @@ class Controller:
             self.view.update_card(name, description, code_comments, trace, general_comments)
 
     def handle_search(self, query):
-        """
-        Handles the search input to filter the system-level tree items.
-
-        Args:
-            query (str): The search query to filter items.
-        """
         query = query.lower()
         for item in self.system_level_items:
             item.setHidden(query not in item.text(0).lower())
         
-        # Hide the special item during search
         self.view.special_item.setHidden(query != "")
 
     def add_requirement(self):
-        """
-        Adds a new requirement based on the current selection.
-        """
         if not hasattr(self, 'selected_item') or not self.selected_item:
-            # Add a new system requirement
             self.add_system_requirement()
         else:
             parent_text = self.selected_item.text(0)
 
             if parent_text.startswith("System Requirement"):
-                # Add a new high-level requirement
                 num_children = self.selected_item.childCount() + 1
                 new_high_level_req = f"High Level Requirement {parent_text} R{num_children}"
                 new_item = QTreeWidgetItem([new_high_level_req])
                 self.selected_item.addChild(new_item)
             elif parent_text.startswith("High Level Requirement"):
-                # Add a new low-level requirement
                 num_children = self.selected_item.childCount() + 1
                 new_low_level_req = f"Low Level Requirement {parent_text} R{num_children}"
                 new_item = QTreeWidgetItem([new_low_level_req])
@@ -165,9 +191,6 @@ class Controller:
                 QMessageBox.warning(self.view, "Invalid Selection", "Please select a valid requirement level.")
 
     def add_system_requirement(self):
-        """
-        Adds a new system requirement.
-        """
         num_system_items = len(self.system_level_items) + 1
         new_system_req = f"System Requirement R{str(num_system_items).zfill(6)}"
         new_item = QTreeWidgetItem([new_system_req])
@@ -175,24 +198,12 @@ class Controller:
         self.system_level_items.append(new_item)
 
     def sync_with_remote(self):
-        """
-        Handles syncing with remote.
-        """
         pass  # Empty handler for now
 
     def load_from_local(self):
-        """
-        Handles loading from local.
-        """
         pass  # Empty handler for now
 
     def handle_project_selection(self, item):
-        """
-        Handles the project selection from the project list.
-        
-        Args:
-            item (QListWidgetItem): The selected item in the project list.
-        """
         project_name = item.text()
         if project_name == "Create New Project":
             self.create_new_project()
@@ -201,9 +212,6 @@ class Controller:
             self.populate_tree(self.project_data[project_name])
 
     def create_new_project(self):
-        """
-        Prompts the user to create a new project and adds it to the project list.
-        """
         project_name, ok = QInputDialog.getText(self.view, "Create New Project", "Enter project name:")
         if ok and project_name:
             if project_name not in self.project_data:
@@ -214,23 +222,13 @@ class Controller:
                 QMessageBox.warning(self.view, "Duplicate Project", "A project with this name already exists.")
 
     def populate_project_list(self):
-        """
-        Populates the project list with project names.
-        """
         project_names = list(self.project_data.keys())
         self.view.populate_project_list(project_names)
 
     def show_view(self):
-        """
-        Shows the main view of the application.
-        """
         self.view.show()
 
     def run(self):
-        """
-        Runs the application.
-        """
-        self.show_view()
         sys.exit(self.app.exec())
 
 if __name__ == '__main__':
