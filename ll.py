@@ -148,3 +148,37 @@ class LowLevel:
             str: Trace string
         """
         return self.trace
+
+    ############
+    #   Helpers
+    ############
+    def __eq__(self, other) -> bool:
+        """Compares a LowLevel object with another.
+
+        Args:
+            other (unknown): Object to compare to.
+
+        Returns:
+            bool: If the objects are the same.
+        """
+        if isinstance(other, LowLevel):
+            ret = (other.code_reference == self.code_reference)
+            ret = ret and (other.comment == self.comment)
+            ret = ret and (other.description == self.description)
+            ret = ret and (other.status == self.status)
+            ret = ret and (other.title == self.title)
+            ret = ret and (other.trace == self.trace)
+            return ret
+        else:
+            return False
+
+    def __hash__(self) -> hash:
+        """Hash of the object.
+
+        Returns:
+            hash: Hash of the LowLevel object
+        """
+        return (
+            (self.code_reference, self.comment, self.description, self.status,
+             self.title, self.trace)
+        )

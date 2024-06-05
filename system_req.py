@@ -1,4 +1,5 @@
 from hl import HighLevel
+from checksum import checksum, hash_list
 
 class SystemRequirement:
     def __init__(
@@ -132,3 +133,38 @@ class SystemRequirement:
                 self.HighLevel.remove(hl)
                 return True
         return False
+    def __eq__(self, other) -> bool:
+        """Checks if the object is equal to another.
+
+        Args:
+            other (unknown): object to compare against.
+
+        Returns:
+            bool: True if equal, false otherwise.
+        """
+        if isinstance(other, SystemRequirement):
+            ret = self.status == other.status
+            ret = ret and (self.description == other.description)
+            ret = ret and (self.title == other.title)
+            # Try to save time without creating list comparison
+            if ret is False:
+                return False
+            # Set to use for comparison of HighLeve objects
+            other_hl = {}
+            for hl in other.HighLevel:
+                other_hl.add(checksum(hl))
+            for hl in self.HighLevel:
+                if checksum(hl) not in other_hl:
+                    return False
+            return True
+        else:
+            return False
+
+    def __hash__(self) -> hash:
+        """Creates a hash of the object.
+
+        Returns:
+            hash: hash of the object.
+        """
+        hash((self.status, self.description,
+              self.title, hash_list(self.HighLevel)))

@@ -1,4 +1,5 @@
 from ll import LowLevel
+from checksum import checksum, hash_list
 
 class HighLevel:
     def __init__(
@@ -132,3 +133,42 @@ class HighLevel:
                 self.LowLevel.remove(l)
                 return True
         return False
+
+    def __eq__(self, other) -> bool:
+        """Compares between two HighLevel objects.
+
+        Args:
+            other (unknown): Other object to compare to.
+
+        Returns:
+            bool: If the objects are the same or not.
+        """
+        if isinstance(other, HighLevel):
+            ret = other.description == self.description
+            ret = ret and (other.status == self.status)
+            ret = ret and (other.title == self.title)
+            # Try to save time if the others already fail
+            if ret is False:
+                return False
+            # Create a set of all the LowLevel objects in the other object
+            other_low_level = set()
+            for ll in other.LowLevel:
+                other_low_level.add(checksum(ll))
+            for ll in self.LowLevel:
+                # If any don't exist in the other objects LowLevel objects,
+                # return not equal.
+                if checksum(ll) not in other_low_level:
+                    return False
+            # Since ret above must be True to hit the for loops, we return true
+            return True
+        else:
+            return False
+
+    def __hash__(self) -> hash:
+        """Returns a hash of the object.
+
+        Returns:
+            hash: hash of the object.
+        """
+        return hash((self.description, self.title,
+                     self.status, hash_list(self.LowLevel)))

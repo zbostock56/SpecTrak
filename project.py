@@ -1,4 +1,5 @@
 from requirement import Requirement
+from checksum import checksum, hash_list
 
 class Project:
     def __init__(
@@ -107,3 +108,37 @@ class Project:
             return True
         except:
             return False
+
+    def __eq__(self, other) -> bool:
+        """Compares between two HighLevel objects.
+
+        Args:
+            other (unknown): Other object to compare to.
+
+        Returns:
+            bool: If the objects are the same or not.
+        """
+        if isinstance(other, Project):
+            ret = self.description == other.description
+            ret = ret and (self.title == other.title)
+            # Save time if the other values are already different
+            if ret is False:
+                return False
+            other_reqs = set()
+            for req in other.requirements:
+                other_reqs.add(checksum(req))
+            for req in self.requirements:
+                if checksum(req) not in other_reqs:
+                    return False
+            return True
+        else:
+            return False
+
+    def __hash__(self) -> hash:
+        """Returns a hash of the object.
+
+        Returns:
+            hash: hash of the object.
+        """
+        return hash(
+            (self.description, self.title, hash_list(self.requirements)))
