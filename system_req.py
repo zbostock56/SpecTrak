@@ -2,7 +2,7 @@ from hl import HighLevel
 
 class SystemRequirement:
     def __init__(
-        self, HighLevel: dict[HighLevel], title='Unnamed',
+        self, HighLevel: list[HighLevel], title='Unnamed',
         description='No description', status='Not Started') -> None:
         """Creates an instance of the SystemRequirement class. This class is in
            the chain of the requirements specifying complex, architectural
@@ -63,7 +63,7 @@ class SystemRequirement:
         else:
             return False
 
-    def _set_high_levels(self, high_level: dict[HighLevel]) -> bool:
+    def _set_high_levels(self, high_level: list[HighLevel]) -> bool:
         """Sets the children HighLevel requirement objects.
 
         Args:
@@ -105,7 +105,7 @@ class SystemRequirement:
         """
         return self.status
 
-    def _get_high_levels(self) -> dict[HighLevel]:
+    def _get_high_levels(self) -> list[HighLevel]:
         """Gets all the HighLevel requirement objects associated with the
            SystemRequirement object
 
@@ -114,3 +114,21 @@ class SystemRequirement:
                              objects.
         """
         return self.HighLevel
+
+    ############
+    #   Helpers
+    ############
+    def _remove_high_level_requirement(self, title: str) -> bool:
+        """Removes high level requirement based on title.
+
+        Args:
+            title (str): Title of high level requirement to remove.
+
+        Returns:
+            bool: If the high level requirement was found or not.
+        """
+        for hl in self.HighLevel:
+            if hl.title == title:
+                self.HighLevel.remove(hl)
+                return True
+        return False
