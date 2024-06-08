@@ -1,4 +1,5 @@
 from system_req import SystemRequirement
+from checksum import checksum, hash_list
 
 class Requirement:
     def __init__(
@@ -133,3 +134,41 @@ class Requirement:
                 self.SystemRequirement.remove(sys_req)
                 return True
         return False
+
+    def __eq__(self, other) -> bool:
+        """Checks if the object is equal to another.
+
+        Args:
+            other (unknown): object to compare against.
+
+        Returns:
+            bool: True if equal, false otherwise.
+        """
+        if isinstance(other, Requirement):
+            ret = self.status == other.status
+            ret = ret and (self.description == other.description)
+            ret = ret and (self.title == other.description)
+            # Try to save time and not do the list operation if not needed
+            if ret is False:
+                return False
+            # Set to compare between the lists of objects
+            other_sys_req = set()
+            for sr in other.SystemRequirement:
+                other_sys_req.add(checksum(sr))
+            for sr in self.SystemRequirement:
+                if checksum(sr) not in other_sys_req:
+                    return False
+            return True
+        else:
+            return False
+
+    def __hash__(self) -> bool:
+        """Creates a hash of the object.
+
+        Returns:
+            hash: hash of the object.
+        """
+        return hash((
+            self.status, self.description, self.title,
+            hash_list(self.SystemRequirement)
+        ))
